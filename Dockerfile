@@ -31,6 +31,7 @@ RUN set -x \
     && make \
     && make install 
 
+# Copy the cpcd binaries to the correct location, including libcpc.so
 RUN cp -r /usr/local/* /usr/
 # Copy the zigbeed source code for the current arch
 COPY zigbeed/$TARGETARCH /zigbeed

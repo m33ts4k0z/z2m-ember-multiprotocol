@@ -12,7 +12,8 @@ RUN apt update && apt install -y --no-install-recommends \
     socat \
     git \
     libreadline-dev \
-    ca-certificates 
+    ca-certificates \
+    dos2unix
 
 # Compile the cpc daemon 
 RUN set -x \
@@ -30,6 +31,7 @@ RUN set -x \
 
 # Copy the cpcd binaries to the correct location, including libcpc.so
 RUN cp -r /usr/local/* /usr/
+
 # Copy the zigbeed source code for the current arch
 COPY zigbeed/$TARGETARCH /zigbeed
 
@@ -43,6 +45,7 @@ RUN \
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
+# Copy the config files to their locations inside the container
 COPY rootfs /
 
 # Deploy zigbee2mqtt from source
@@ -61,15 +64,16 @@ RUN mkdir /opt/zigbee2mqtt \
     && cd /opt/zigbee2mqtt \
     && npm ci --no-audit --no-optional --no-update-notifier \
     && npm rebuild --build-from-source
-  #  && npm run build 
 
 COPY configuration.yaml /opt/zigbee2mqtt/data/configuration.yaml
 
-RUN sed -i 's|mqtt://localhost|mqtt://192.168.1.3|g' /opt/zigbee2mqtt/data/configuration.yaml 
+#RUN sed -i 's|mqtt://localhost|mqtt://192.168.1.3|g' /opt/zigbee2mqtt/data/configuration.yaml 
 
 # Update the configs
 COPY update_configs.sh /update_configs.sh
 RUN chmod +x /update_configs.sh
 ENTRYPOINT ["/update_configs.sh"]
+RUN dos2unix /usr/local/etc/*.conf
 
+# Start all services
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

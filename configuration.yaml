@@ -23,3 +23,6 @@ serial:
   adapter: ember
   baudrate: 460800
   rtscts: false
+advanced:
+  log_output:
+    - console

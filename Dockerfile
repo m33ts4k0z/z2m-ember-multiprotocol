@@ -55,9 +55,6 @@ RUN apt install -y --no-install-recommends \
     nodejs \
     linux-headers-generic
 
-RUN node --version
-RUN npm --version
-
 RUN mkdir /opt/zigbee2mqtt \
     && chown -R ${USER}: /opt/zigbee2mqtt \
     && git clone --depth 1 -b dev https://github.com/Koenkk/zigbee2mqtt.git /opt/zigbee2mqtt \

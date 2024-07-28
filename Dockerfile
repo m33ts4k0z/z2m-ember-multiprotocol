@@ -13,8 +13,7 @@ RUN apt update && apt install -y --no-install-recommends \
     git \
     libreadline-dev \
     ca-certificates \
-    dos2unix \
-    python3
+    dos2unix 
 
 # Compile the cpc daemon 
 RUN set -x \

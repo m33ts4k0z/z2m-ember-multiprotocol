@@ -18,7 +18,7 @@ mqtt:
 
 # Serial settings
 serial:
-  port: tcp://127.0.0.1:4321  
+  port: /dev/ttyZigbeeNCP
   adapter: ember
  # baudrate: 460800
  # rtscts: false

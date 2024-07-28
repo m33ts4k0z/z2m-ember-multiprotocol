@@ -19,7 +19,9 @@ mqtt:
 # Serial settings
 serial:
   # Location of CC2531 USB sniffer
-  port: /dev/ttyZigbeeNCP  
+  port: tcp://127.0.0.1:4321  
   adapter: ember
   baudrate: 460800
-  rtscts: true
+  rtscts: false
+advanced:
+  log_level: debug

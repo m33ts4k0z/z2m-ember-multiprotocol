@@ -13,7 +13,8 @@ RUN apt update && apt install -y --no-install-recommends \
     git \
     libreadline-dev \
     ca-certificates \
-    dos2unix
+    dos2unix \
+    python3
 
 # Compile the cpc daemon 
 RUN set -x \
@@ -67,13 +68,14 @@ RUN mkdir /opt/zigbee2mqtt \
 
 COPY configuration.yaml /opt/zigbee2mqtt/data/configuration.yaml
 
-#RUN sed -i 's|mqtt://localhost|mqtt://192.168.1.3|g' /opt/zigbee2mqtt/data/configuration.yaml 
-
 # Update the configs
 COPY update_configs.sh /update_configs.sh
 RUN chmod +x /update_configs.sh
 ENTRYPOINT ["/update_configs.sh"]
 RUN dos2unix /usr/local/etc/*.conf
+
+COPY start_zigbeed.sh /start_zigbeed.sh
+RUN chmod +x /start_zigbeed.sh
 
 # Start all services
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

@@ -18,11 +18,10 @@ mqtt:
 
 # Serial settings
 serial:
-  # Location of CC2531 USB sniffer
   port: tcp://127.0.0.1:4321  
   adapter: ember
-  baudrate: 460800
-  rtscts: false
+ # baudrate: 460800
+ # rtscts: false
 advanced:
   log_output:
     - console

@@ -73,6 +73,7 @@ RUN chmod +x /update_configs.sh
 ENTRYPOINT ["/update_configs.sh"]
 RUN dos2unix /usr/local/etc/*.conf
 
+# Copy a custom way to start zigbeed since we need to wait for the tmp interface to be created
 COPY start_zigbeed.sh /start_zigbeed.sh
 RUN chmod +x /start_zigbeed.sh
 

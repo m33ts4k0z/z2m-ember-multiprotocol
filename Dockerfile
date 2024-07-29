@@ -53,7 +53,8 @@ RUN apt install -y --no-install-recommends \
     libsystemd-dev \
     npm \
     nodejs \
-    linux-headers-generic
+    linux-headers-generic \
+    wget
 
 RUN mkdir /opt/zigbee2mqtt \
     && chown -R ${USER}: /opt/zigbee2mqtt \
@@ -73,6 +74,8 @@ RUN dos2unix /usr/local/etc/*.conf
 # Copy a custom way to start zigbeed since we need to wait for the tmp interface to be created
 COPY start_zigbeed.sh /start_zigbeed.sh
 RUN chmod +x /start_zigbeed.sh
+
+RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$TARGETARCH -O /usr/bin/yq && chmod +x /usr/bin/yq
 
 # Start all services
 CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

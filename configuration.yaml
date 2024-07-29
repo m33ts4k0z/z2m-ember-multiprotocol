@@ -1,3 +1,4 @@
+# DO NOT DIRECTLY EDIT THIS FILE. USE .env FILE INSTEAD.
 # Home Assistant integration (MQTT discovery)
 homeassistant: true
 frontend:
@@ -20,8 +21,8 @@ mqtt:
 serial:
   port: /dev/ttyZigbeeNCP
   adapter: ember
- # baudrate: 460800
- # rtscts: false
+  baudrate: 460800
+  rtscts: false
 advanced:
   log_output:
     - console

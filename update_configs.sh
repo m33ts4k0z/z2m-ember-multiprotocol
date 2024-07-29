@@ -28,23 +28,50 @@ update_config() {
     # Convert key to lowercase for case-insensitive matching
     local lowercase_key=$(echo "$key" | tr '[:upper:]' '[:lower:]')
 
-    if [ "$format" = "colon" ]; then
-        awk -v key="$lowercase_key" -v value="$value" '
-        tolower($0) ~ "^[[:space:]]*"key":" {
-            print key": "value
-            next
-        }
-        {print}
-        ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
-    else
-        awk -v key="$lowercase_key" -v value="$value" '
-        tolower($0) ~ "^[[:space:]]*"key"=" {
-            print key"="value
-            next
-        }
-        {print}
-        ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
-    fi
+    case "$format" in
+        "colon")
+            awk -v key="$lowercase_key" -v value="$value" '
+            tolower($0) ~ "^[[:space:]]*"key":" {
+                print key": "value
+                next
+            }
+            {print}
+            ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+            ;;
+        "yaml")
+            # Split only at the first underscore
+            local yaml_path=$(echo "$key" | tr '[:upper:]' '[:lower:]' | sed 's/_/./1')
+            
+            # Update YAML file using yq, preserving the original value format
+            if [[ $value == \"*\" ]]; then
+                # Value is already quoted, use it as is
+                yq eval ".$yaml_path = $value" -i "$file"
+            elif [[ $value =~ ^[0-9]+$ ]] || [[ $value == "true" ]] || [[ $value == "false" ]]; then
+                # Value is a number or boolean, don't quote it
+                yq eval ".$yaml_path = $value" -i "$file"
+            else
+                # Value is not quoted and not a number or boolean, use it as a string
+                yq eval ".$yaml_path = \"$value\"" -i "$file"
+            fi
+            ;;
+        *)
+            if [[ $key == "VERBOSE" ]]; then
+                if [[ $value == "true" ]]; then
+                    sed -i 's/^# verbose=/verbose=/' "$file"
+                elif [[ $value == "false" ]]; then
+                    sed -i 's/^verbose=/# verbose=/' "$file"
+                fi
+            else
+                awk -v key="$lowercase_key" -v value="$value" '
+                tolower($0) ~ "^[[:space:]]*"key"=" {
+                    print key"="value
+                    next
+                }
+                {print}
+                ' "$file" > "${file}.tmp" && mv "${file}.tmp" "$file"
+            fi
+            ;;
+    esac
 
     echo "Updated $file"
     grep -i "^[[:space:]]*${lowercase_key}[=:]" "$file" || echo "Key not found in file"
@@ -54,6 +81,7 @@ update_config() {
 declare -A section_to_config=(
     ["cpcd"]="/usr/local/etc/cpcd.conf:colon:false"
     ["zigbeed"]="/usr/local/etc/zigbeed.conf:equals:true"
+    ["zigbee2mqtt"]="/opt/zigbee2mqtt/data/configuration.yaml:yaml:false"
    # ["otbr"]="/usr/local/etc/otbr.conf:equals:false"
 )
 

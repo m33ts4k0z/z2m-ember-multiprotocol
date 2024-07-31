@@ -79,7 +79,7 @@ update_config() {
 
 # Define mapping of sections to config files, their formats, and underscore conversion
 declare -A section_to_config=(
-    ["cpcd"]="/usr/local/etc/cpcd.conf:colon:false"
+   # ["cpcd"]="/usr/local/etc/cpcd.conf:colon:false"
     ["zigbeed"]="/usr/local/etc/zigbeed.conf:equals:true"
     ["zigbee2mqtt"]="/opt/zigbee2mqtt/data/configuration.yaml:yaml:false"
    # ["otbr"]="/usr/local/etc/otbr.conf:equals:false"

@@ -1,49 +1,47 @@
-FROM debian:bookworm
+FROM ubuntu:24.04
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG TARGETARCH
+ENV TARGETARCH2=amd64
 
 RUN echo "Building for $TARGETPLATFORM from $BUILDPLATFORM on $TARGETARCH"
   
 RUN apt update && apt install -y --no-install-recommends \
     build-essential \
-    supervisor \
     socat \
     git \
-    libreadline-dev \
+    tar \
+    xz-utils\
     ca-certificates \
-    dos2unix 
+    dos2unix \
+    sudo \
+    curl \
+    systemd \
+    systemd-sysv \
+    dbus \
+    dbus-user-session
 
-# Compile the cpc daemon 
-RUN set -x \
-&& apt install -y --no-install-recommends \
-   cmake \
-    libmbedtls-dev \
-    && git clone https://github.com/SiliconLabs/cpc-daemon.git \
-    && cd cpc-daemon \
-    && mkdir build \
-    && cd build \
-    && cmake ../ \
-    -DENABLE_ENCRYPTION=FALSE \
-    && make \
-    && make install 
+COPY set_targetarch.sh /set_targetarch.sh
+RUN chmod +x /set_targetarch.sh
+RUN /set_targetarch.sh
+RUN mkdir /root/silabs-binaries
+RUN tar -xvJf /root/silabs-binaries.tar.xz -C /root/silabs-binaries
 
-# Copy the cpcd binaries to the correct location, including libcpc.so
-RUN cp -r /usr/local/* /usr/
+RUN ls -lh /root/silabs-binaries
 
-# Copy the zigbeed source code for the current arch
-COPY zigbeed/$TARGETARCH /zigbeed
+RUN cd /root/silabs-binaries \
+&& chmod +x pre-setup.sh \
+&& ./pre-setup.sh \
+--device-path ${DEVICE_PATH} \
+--baudrate ${BAUDRATE} \
+--hardware-flow ${HARDWARE_FLOW} \
+--disable_encryption ${DISABLE_ENCRYPTION} \
+--disable-conflict-services ${DISABLE_CONFLICT_SERVICES} \
+--zigbeed-iid ${ZIGBEED_IID} \
+--otbr-iid ${OTBR_IID}
 
-RUN \
-    set -x \
-    && apt install -y --no-install-recommends \
-    libmbedtls-dev \
-    && cd /zigbeed \
-    && make -f zigbeed.Makefile \
-    && cp /zigbeed/build/debug/zigbeed /usr/local/bin
-
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN cd /root/silabs-binaries && ./install.sh --all
 
 # Copy the config files to their locations inside the container
 COPY rootfs /
@@ -71,11 +69,7 @@ RUN chmod +x /update_configs.sh
 ENTRYPOINT ["/update_configs.sh"]
 RUN dos2unix /usr/local/etc/*.conf
 
-# Copy a custom way to start zigbeed since we need to wait for the tmp interface to be created
-COPY start_zigbeed.sh /start_zigbeed.sh
-RUN chmod +x /start_zigbeed.sh
-
 RUN wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_$TARGETARCH -O /usr/bin/yq && chmod +x /usr/bin/yq
 
 # Start all services
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/sbin/init"]

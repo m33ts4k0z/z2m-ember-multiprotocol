@@ -20,7 +20,8 @@ RUN apt update && apt install -y --no-install-recommends \
     systemd \
     systemd-sysv \
     dbus \
-    dbus-user-session
+    dbus-user-session \
+    libmbedtls-dev
 
 COPY set_targetarch.sh /set_targetarch.sh
 RUN chmod +x /set_targetarch.sh
@@ -39,12 +40,14 @@ RUN cd /root/silabs-binaries \
 --disable_encryption ${DISABLE_ENCRYPTION} \
 --disable-conflict-services ${DISABLE_CONFLICT_SERVICES} \
 --zigbeed-iid ${ZIGBEED_IID} \
---otbr-iid ${OTBR_IID}
+--otbr-iid ${OTBR_IID} && sleep 10
 
 RUN cd /root/silabs-binaries && ./install.sh --all
 
 # Copy the config files to their locations inside the container
 COPY rootfs /
+
+RUN systemctl enable zigbee2mqtt
 
 # Deploy zigbee2mqtt from source
 RUN apt install -y --no-install-recommends \
@@ -52,7 +55,7 @@ RUN apt install -y --no-install-recommends \
     npm \
     nodejs \
     linux-headers-generic \
-    wget
+    wget 
 
 RUN mkdir /opt/zigbee2mqtt \
     && chown -R ${USER}: /opt/zigbee2mqtt \

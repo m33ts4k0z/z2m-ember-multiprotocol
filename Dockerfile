@@ -21,7 +21,16 @@ RUN apt update && apt install -y --no-install-recommends \
     systemd-sysv \
     dbus \
     dbus-user-session \
-    libmbedtls-dev
+    libmbedtls-dev \
+    iproute2 \
+    lsb-release \
+    bluetooth \
+    bluez \
+    bluez-tools \
+    rfkill \
+    libbluetooth-dev \
+    iptables
+
 
 COPY set_targetarch.sh /set_targetarch.sh
 RUN chmod +x /set_targetarch.sh

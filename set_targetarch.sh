@@ -4,6 +4,8 @@ echo "Running set_targetarch.sh"
 echo "TARGETARCH is $TARGETARCH"
 if [ "$TARGETARCH" = "amd64" ]; then
     TARGETARCH2="x86_64"
+elif [ "$TARGETARCH" = "arm" ]; then
+    TARGETARCH2="arm32"
 else
     TARGETARCH2="$TARGETARCH"
 fi

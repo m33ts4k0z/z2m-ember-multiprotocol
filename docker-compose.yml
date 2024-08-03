@@ -4,7 +4,7 @@ services:
     image: "m33ts4k0z/z2m-ember-multiprotocol:latest"
     volumes:
       - .env:/.env
-    # - zigbee2mqtt:/opt/zigbee2mqtt/data # Change the left portion to the colon of your zigbee2mqtt data directory
+    # - your_zigbee2mqtt_data_directory:/opt/zigbee2mqtt/data # Change the left portion of the colon to your zigbee2mqtt data directory
     restart: unless-stopped
     privileged: true
     network_mode: host

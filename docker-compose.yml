@@ -1,0 +1,12 @@
+services:
+  z2m-ember-multiprotocol:
+    container_name: z2m-ember-multiprotocol
+    image: "m33ts4k0z/z2m-ember-multiprotocol:latest"
+    volumes:
+      - .env:/.env
+    # - zigbee2mqtt:/opt/zigbee2mqtt/data # Change the left portion to the colon of your zigbee2mqtt data directory
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0

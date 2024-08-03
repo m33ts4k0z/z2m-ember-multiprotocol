@@ -28,6 +28,9 @@ update_config() {
     # Convert key to lowercase for case-insensitive matching
     local lowercase_key=$(echo "$key" | tr '[:upper:]' '[:lower:]')
 
+    # Trim trailing whitespace and carriage returns from value
+    value=$(echo "$value" | sed -e 's/[[:space:]]*$//' -e 's/\r$//')
+
     case "$format" in
         "colon")
             awk -v key="$lowercase_key" -v value="$value" '
@@ -42,17 +45,20 @@ update_config() {
             # Split only at the first underscore
             local yaml_path=$(echo "$key" | tr '[:upper:]' '[:lower:]' | sed 's/_/./1')
             
-            # Update YAML file using yq, preserving the original value format
-            if [[ $value == \"*\" ]]; then
+            # Preserve existing quotes if present, otherwise add single quotes if needed
+            if [[ $value == \"*\" ]] || [[ $value == \'*\' ]]; then
                 # Value is already quoted, use it as is
                 yq eval ".$yaml_path = $value" -i "$file"
-            elif [[ $value =~ ^[0-9]+$ ]] || [[ $value == "true" ]] || [[ $value == "false" ]]; then
-                # Value is a number or boolean, don't quote it
+            elif [[ $value =~ ^[0-9]+$ ]] || [[ $value == "true" ]] || [[ $value == "false" ]] || [[ $value == "null" ]]; then
+                # Value is a number, boolean, or null, don't quote it
                 yq eval ".$yaml_path = $value" -i "$file"
             else
-                # Value is not quoted and not a number or boolean, use it as a string
-                yq eval ".$yaml_path = \"$value\"" -i "$file"
+                # Value is not quoted and not a number, boolean, or null, use single quotes
+                yq eval ".$yaml_path = '${value//\'/\'\\\'\'}'" -i "$file"
             fi
+
+            # Remove any remaining carriage returns from the entire file
+            sed -i 's/\r$//' "$file"
             ;;
         *)
             if [[ $key == "VERBOSE" ]]; then
@@ -81,7 +87,7 @@ update_config() {
 declare -A section_to_config=(
     ["cpcd"]="/usr/local/etc/cpcd.conf:colon:false"
     ["zigbeed"]="/usr/local/etc/zigbeed.conf:equals:true"
-    ["zigbee2mqtt"]="/opt/zigbee2mqtt/data/configuration.yaml:yaml:false"
+   # ["zigbee2mqtt"]="/opt/zigbee2mqtt/data/configuration.yaml:yaml:false"
    # ["otbr"]="/usr/local/etc/otbr.conf:equals:false"
 )
 

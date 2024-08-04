@@ -1,4 +1,3 @@
-# DO NOT DIRECTLY EDIT THIS FILE. USE .env FILE INSTEAD.
 # Home Assistant integration (MQTT discovery)
 homeassistant: true
 frontend:
@@ -26,3 +25,7 @@ serial:
 advanced:
   log_output:
     - console
+  pan_id: GENERATE
+  ext_pan_id: GENERATE
+  network_key: GENERATE
+  channel: 20

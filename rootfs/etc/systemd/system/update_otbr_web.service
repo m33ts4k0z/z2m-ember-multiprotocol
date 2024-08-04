@@ -1,0 +1,18 @@
+[Unit]
+Description=Update the otbr web port
+StartLimitIntervalSec=0
+After=otbr.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStartPre=/bin/sleep 10
+ExecStart=/update_otbr_web.sh
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=update_otbr_web
+# This service shall be considered active after start
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

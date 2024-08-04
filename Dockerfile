@@ -4,7 +4,6 @@ ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG TARGETARCH
 ENV TARGETARCH2=amd64
-ENV OTBR_WEB_PORT=8787
 
 RUN echo "Building for $TARGETPLATFORM from $BUILDPLATFORM on $TARGETARCH"
   
@@ -32,21 +31,25 @@ RUN apt update && apt install -y --no-install-recommends \
     iptables \
     nano
 
-
 COPY set_targetarch.sh /set_targetarch.sh
 RUN chmod +x /set_targetarch.sh
 RUN /set_targetarch.sh
 RUN mkdir /root/silabs-binaries
 RUN tar -xvJf /root/silabs-binaries.tar.xz -C /root/silabs-binaries
 
-# Wait 10 seconds before trying to attach the hci device for the bluetooth to work
+# Wait 10 seconds before trying to attach the hci device for the bluetooth to work.
+# Maybe this delay is not needed, testing needed.
 RUN sed -i '/^ExecStart/i ExecStartPre=/bin/sleep 10' /root/silabs-binaries/systemd/hciattach.service
 
-# Change the port for the otbr web interface
-RUN PORT=${OTBR_WEB_PORT:-85} && sed -i "s/\(.*-p \)80/\1$PORT/" /root/silabs-binaries/otbr/otbr_entrypoint.sh
+# Remove the bluetooth dependency from the hciattach service since we will use the host's bluetooth
+RUN sed -i '/^BindsTo=/ s/ bluetooth\.service//; /^After=/ s/ bluetooth\.service//' /root/silabs-binaries/systemd/hciattach.service
 
-# Remove the sneaky - from the EnvironmentFile line
-RUN sed -i 's/^EnvironmentFile=-/EnvironmentFile=/' /root/silabs-binaries/otbr/web/otbr-web.service
+# Wait 20 seconds before starting the otbr web service so we have enough time to edit the config
+RUN sed -i '/^ExecStart/i ExecStartPre=/bin/sleep 20' /root/silabs-binaries/otbr/web/otbr-web.service
+
+ARG OTBR_WEB_PORT
+RUN OTBR_WEB_PORT=$(grep OTBR_WEB_PORT .env | cut -d '=' -f2) && \
+    echo "OTBR_WEB_OPTS=\"-I wpan0 -d7 -p $OTBR_WEB_PORT\"" > /etc/default/otbr-web
 
 RUN ls -lh /root/silabs-binaries
 
@@ -66,8 +69,10 @@ RUN cd /root/silabs-binaries && ./install.sh --all
 COPY rootfs /
 
 RUN chmod -x /etc/systemd/system/zigbee2mqtt.service
+RUN chmod -x /etc/systemd/system/update_otbr_web.service
 
 RUN systemctl enable zigbee2mqtt
+RUN systemctl enable update_otbr_web
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt install -y nodejs \
@@ -95,7 +100,11 @@ RUN systemctl mask bluetooth.service
 
 # Update the configs
 COPY update_configs.sh /update_configs.sh
-RUN chmod +x /update_configs.sh
+COPY update_otbr_web.sh /update_otbr_web.sh
+
+RUN chmod +x /update_configs.sh 
+RUN chmod +x /update_otbr_web.sh
+
 ENTRYPOINT ["/update_configs.sh"]
 RUN dos2unix /usr/local/etc/*.conf
 

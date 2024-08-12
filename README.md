@@ -1,4 +1,4 @@
-## Silicon Laboratories multiprotocol with Zigbee2Mqtt bundled. Based on Simplicity SDK 2024.6.1
+## Silicon Laboratories multiprotocol container with Zigbee2Mqtt bundled. Based on Simplicity SDK 2024.6.1
 
 This is an **experimental** multiprotocol container supporting **Zigbee EmberZNet**, **OpenThread** and **Bluetooth Low Energy** using the same dongle. 
 

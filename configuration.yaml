@@ -25,7 +25,8 @@ serial:
 advanced:
   log_output:
     - console
+    - syslog
   pan_id: GENERATE
   ext_pan_id: GENERATE
   network_key: GENERATE
-  channel: 20
+  channel: 25

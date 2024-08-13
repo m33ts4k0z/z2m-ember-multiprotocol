@@ -14,6 +14,8 @@ Silicon labs doesn't offer an amd64 container (Thanks Nerivec for the incredible
 > [!WARNING]
 > After flashing the firmware above, ezsp will no longer be an option in Zigbee2Mqtt. Use ember instead. Of course you can always flash a 7.4 firmware again in order to use ezsp.
 
+> [!CAUTION]
+> Only the Sonoff Dongle-E and NabuCasa Skyconnect are tested with these firmwares. Use at your own risk
 ### 2 Ways to deploy
 
 You can either use the run command:

@@ -42,7 +42,7 @@ Don't forget to change paths and/or devices where necessary.
 Remember this is still under testing but feel free to report issues 😊
 
 
-Sources:
+References:
 
 https://www.silabs.com/documents/public/application-notes/an1333-concurrent-protocols-with-802-15-4-rcp.pdf
 
